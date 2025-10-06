@@ -1,0 +1,416 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createChild, savePreferences } from '@/frontend/lib/onboarding/actions'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/frontend/components/ui/card'
+import { Button } from '@/frontend/components/ui/button'
+import { Input } from '@/frontend/components/ui/input'
+import { Label } from '@/frontend/components/ui/label'
+
+type Step = 'child' | 'preferences' | 'success'
+
+const TOPIC_OPTIONS = [
+  'Education', 'Science', 'Coding', 'Gaming',
+  'Music', 'Sports', 'Arts & Crafts', 'Other'
+]
+
+const BLOCKED_TOPIC_OPTIONS = [
+  'Drama', 'Pranks', 'Politics', 'Violence',
+  'Inappropriate Language', 'Other'
+]
+
+export default function OnboardingPage() {
+  const router = useRouter()
+  const [step, setStep] = useState<Step>('child')
+  const [childId, setChildId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const [childName, setChildName] = useState('')
+  const [childAge, setChildAge] = useState('')
+
+  const [allowedTopics, setAllowedTopics] = useState<string[]>([])
+  const [blockedTopics, setBlockedTopics] = useState<string[]>([])
+  const [allowMildLanguage, setAllowMildLanguage] = useState(false)
+  const [educationalPriority, setEducationalPriority] = useState<'high' | 'medium' | 'low'>('high')
+
+  const [customAllowedTopics, setCustomAllowedTopics] = useState<string[]>([])
+  const [customBlockedTopics, setCustomBlockedTopics] = useState<string[]>([])
+
+  const [newAllowedTopic, setNewAllowedTopic] = useState('')
+  const [newBlockedTopic, setNewBlockedTopic] = useState('')
+
+  async function handleChildSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+
+    const formData = new FormData(e.currentTarget)
+    const result = await createChild(formData)
+
+    if (result.error) {
+      setError(result.error)
+      setLoading(false)
+    } else if (result.childId) {
+      setChildId(result.childId)
+      setStep('preferences')
+      setLoading(false)
+    }
+  }
+
+  async function handlePreferencesSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+
+    if (!childId) {
+      setError('No child ID found')
+      setLoading(false)
+      return
+    }
+
+    const finalAllowedTopics = [...allowedTopics, ...customAllowedTopics]
+    const finalBlockedTopics = [...blockedTopics, ...customBlockedTopics]
+
+    const result = await savePreferences(childId, {
+      allowedTopics: finalAllowedTopics,
+      blockedTopics: finalBlockedTopics,
+      allowMildLanguage,
+      educationalPriority,
+    })
+
+    if (result.error) {
+      setError(result.error)
+      setLoading(false)
+    } else {
+      setStep('success')
+      setLoading(false)
+    }
+  }
+
+  function addCustomAllowedTopic() {
+    const topic = newAllowedTopic.trim()
+    if (topic && !customAllowedTopics.includes(topic) && !TOPIC_OPTIONS.includes(topic)) {
+      setCustomAllowedTopics([...customAllowedTopics, topic])
+      setNewAllowedTopic('')
+    }
+  }
+
+  function addCustomBlockedTopic() {
+    const topic = newBlockedTopic.trim()
+    if (topic && !customBlockedTopics.includes(topic) && !BLOCKED_TOPIC_OPTIONS.includes(topic)) {
+      setCustomBlockedTopics([...customBlockedTopics, topic])
+      setNewBlockedTopic('')
+    }
+  }
+
+  function removeCustomAllowedTopic(topic: string) {
+    setCustomAllowedTopics(customAllowedTopics.filter(t => t !== topic))
+  }
+
+  function removeCustomBlockedTopic(topic: string) {
+    setCustomBlockedTopics(customBlockedTopics.filter(t => t !== topic))
+  }
+
+  function handleConnectYouTube() {
+    if (childId) {
+      window.location.href = `/api/youtube/auth?childId=${childId}`
+    }
+  }
+
+
+  function toggleTopic(topic: string, list: string[], setter: (topics: string[]) => void) {
+    if (list.includes(topic)) {
+      setter(list.filter(t => t !== topic))
+    } else {
+      setter([...list, topic])
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-2xl">
+        {step === 'child' && (
+          <>
+            <CardHeader>
+              <CardTitle>Add Your Child</CardTitle>
+              <CardDescription>
+                Let's start by creating a profile for your child
+              </CardDescription>
+            </CardHeader>
+            <form onSubmit={handleChildSubmit}>
+              <CardContent className="space-y-4">
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
+                    {error}
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="name">Child's Name</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="Enter name"
+                    value={childName}
+                    onChange={(e) => setChildName(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="age">Child's Age</Label>
+                  <Input
+                    id="age"
+                    name="age"
+                    type="number"
+                    min="1"
+                    max="18"
+                    placeholder="Enter age (1-18)"
+                    value={childAge}
+                    onChange={(e) => setChildAge(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                  <p className="text-sm text-gray-500">
+                    Age helps us provide age-appropriate content analysis
+                  </p>
+                </div>
+
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? 'Creating...' : 'Next'}
+                </Button>
+              </CardContent>
+            </form>
+          </>
+        )}
+
+        {step === 'preferences' && (
+          <>
+            <CardHeader>
+              <CardTitle>Set Content Preferences</CardTitle>
+              <CardDescription>
+                Help us understand what content is appropriate for {childName}
+              </CardDescription>
+            </CardHeader>
+            <form onSubmit={handlePreferencesSubmit}>
+              <CardContent className="space-y-6">
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
+                    {error}
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  <Label>What topics are OK? (select all that apply)</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {TOPIC_OPTIONS.map((topic) => (
+                      <label
+                        key={topic}
+                        className="flex items-center space-x-2 p-2 border rounded cursor-pointer hover:bg-gray-50"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={allowedTopics.includes(topic)}
+                          onChange={() => toggleTopic(topic, allowedTopics, setAllowedTopics)}
+                          className="rounded"
+                        />
+                        <span className="text-sm">{topic}</span>
+                      </label>
+                    ))}
+                    {customAllowedTopics.map((topic) => (
+                      <label
+                        key={topic}
+                        className="flex items-center justify-between space-x-2 p-2 border rounded bg-blue-50 border-blue-200"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={true}
+                            readOnly
+                            className="rounded"
+                          />
+                          <span className="text-sm">{topic}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeCustomAllowedTopic(topic)}
+                          className="text-red-600 hover:text-red-800 text-xs"
+                        >
+                          ✕
+                        </button>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="mt-3">
+                    <Label htmlFor="newAllowed">Add custom allowed topic</Label>
+                    <Input
+                      id="newAllowed"
+                      type="text"
+                      placeholder="Type a topic and press Enter (e.g., Cooking, Photography)"
+                      value={newAllowedTopic}
+                      onChange={(e) => setNewAllowedTopic(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          addCustomAllowedTopic()
+                        }
+                      }}
+                      className="mt-2"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>What topics should be avoided?</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {BLOCKED_TOPIC_OPTIONS.map((topic) => (
+                      <label
+                        key={topic}
+                        className="flex items-center space-x-2 p-2 border rounded cursor-pointer hover:bg-gray-50"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={blockedTopics.includes(topic)}
+                          onChange={() => toggleTopic(topic, blockedTopics, setBlockedTopics)}
+                          className="rounded"
+                        />
+                        <span className="text-sm">{topic}</span>
+                      </label>
+                    ))}
+                    {customBlockedTopics.map((topic) => (
+                      <label
+                        key={topic}
+                        className="flex items-center justify-between space-x-2 p-2 border rounded bg-blue-50 border-blue-200"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={true}
+                            readOnly
+                            className="rounded"
+                          />
+                          <span className="text-sm">{topic}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeCustomBlockedTopic(topic)}
+                          className="text-red-600 hover:text-red-800 text-xs"
+                        >
+                          ✕
+                        </button>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="mt-3">
+                    <Label htmlFor="newBlocked">Add custom blocked topic</Label>
+                    <Input
+                      id="newBlocked"
+                      type="text"
+                      placeholder="Type a topic and press Enter (e.g., Conspiracy theories)"
+                      value={newBlockedTopic}
+                      onChange={(e) => setNewBlockedTopic(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          addCustomBlockedTopic()
+                        }
+                      }}
+                      className="mt-2"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Allow mild language in educational content?</Label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="mildLanguage"
+                        checked={allowMildLanguage === true}
+                        onChange={() => setAllowMildLanguage(true)}
+                      />
+                      <span>Yes</span>
+                    </label>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="mildLanguage"
+                        checked={allowMildLanguage === false}
+                        onChange={() => setAllowMildLanguage(false)}
+                      />
+                      <span>No</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Educational priority?</Label>
+                  <div className="flex gap-4">
+                    {(['high', 'medium', 'low'] as const).map((priority) => (
+                      <label key={priority} className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="priority"
+                          checked={educationalPriority === priority}
+                          onChange={() => setEducationalPriority(priority)}
+                        />
+                        <span className="capitalize">{priority}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? 'Saving...' : 'Save & Continue'}
+                </Button>
+              </CardContent>
+            </form>
+          </>
+        )}
+
+        {step === 'success' && (
+          <>
+            <CardHeader>
+              <CardTitle>✅ Profile Created!</CardTitle>
+              <CardDescription>
+                {childName}'s profile has been set up successfully
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-gray-600">
+                Next step: Connect {childName}'s YouTube account to start analyzing their watch history.
+              </p>
+              
+              <div className="space-y-3">
+                <Button
+                  className="w-full"
+                  size="lg"
+                  onClick={handleConnectYouTube}
+                >
+                  🔗 Connect YouTube Account
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => router.push('/dashboard')}
+                >
+                  Skip for Now (Go to Dashboard)
+                </Button>
+              </div>
+
+              <p className="text-xs text-gray-500 text-center">
+                You'll be redirected to Google to authorize access to {childName}'s watch history
+              </p>
+            </CardContent>
+          </>
+        )}
+      </Card>
+    </div>
+  )
+}
