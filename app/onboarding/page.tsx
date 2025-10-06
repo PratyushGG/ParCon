@@ -37,9 +37,13 @@ export default function OnboardingPage() {
   const [allowMildLanguage, setAllowMildLanguage] = useState(false)
   const [educationalPriority, setEducationalPriority] = useState<'high' | 'medium' | 'low'>('high')
 
-  // Custom topic inputs
-  const [customAllowedTopic, setCustomAllowedTopic] = useState('')
-  const [customBlockedTopic, setCustomBlockedTopic] = useState('')
+  // Custom topics that were added by user
+  const [customAllowedTopics, setCustomAllowedTopics] = useState<string[]>([])
+  const [customBlockedTopics, setCustomBlockedTopics] = useState<string[]>([])
+
+  // Current input values for adding new custom topics
+  const [newAllowedTopic, setNewAllowedTopic] = useState('')
+  const [newBlockedTopic, setNewBlockedTopic] = useState('')
 
   // Handle child form submission
   async function handleChildSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -72,19 +76,9 @@ export default function OnboardingPage() {
       return
     }
 
-    // Build final topic lists (including custom topics)
-    const finalAllowedTopics = [...allowedTopics]
-    const finalBlockedTopics = [...blockedTopics]
-
-    // Add custom allowed topic if "Other" is selected and text is entered
-    if (allowedTopics.includes('Other') && customAllowedTopic.trim()) {
-      finalAllowedTopics.push(customAllowedTopic.trim())
-    }
-
-    // Add custom blocked topic if "Other" is selected and text is entered
-    if (blockedTopics.includes('Other') && customBlockedTopic.trim()) {
-      finalBlockedTopics.push(customBlockedTopic.trim())
-    }
+    // Build final topic lists - combine predefined and custom topics
+    const finalAllowedTopics = [...allowedTopics, ...customAllowedTopics]
+    const finalBlockedTopics = [...blockedTopics, ...customBlockedTopics]
 
     const result = await savePreferences(childId, {
       allowedTopics: finalAllowedTopics,
@@ -100,6 +94,34 @@ export default function OnboardingPage() {
       setStep('success')
       setLoading(false)
     }
+  }
+
+  // Add custom allowed topic
+  function addCustomAllowedTopic() {
+    const topic = newAllowedTopic.trim()
+    if (topic && !customAllowedTopics.includes(topic) && !TOPIC_OPTIONS.includes(topic)) {
+      setCustomAllowedTopics([...customAllowedTopics, topic])
+      setNewAllowedTopic('')
+    }
+  }
+
+  // Add custom blocked topic
+  function addCustomBlockedTopic() {
+    const topic = newBlockedTopic.trim()
+    if (topic && !customBlockedTopics.includes(topic) && !BLOCKED_TOPIC_OPTIONS.includes(topic)) {
+      setCustomBlockedTopics([...customBlockedTopics, topic])
+      setNewBlockedTopic('')
+    }
+  }
+
+  // Remove custom allowed topic
+  function removeCustomAllowedTopic(topic: string) {
+    setCustomAllowedTopics(customAllowedTopics.filter(t => t !== topic))
+  }
+
+  // Remove custom blocked topic
+  function removeCustomBlockedTopic(topic: string) {
+    setCustomBlockedTopics(customBlockedTopics.filter(t => t !== topic))
   }
 
   // Toggle topic selection
@@ -204,20 +226,47 @@ export default function OnboardingPage() {
                         <span className="text-sm">{topic}</span>
                       </label>
                     ))}
+                    {customAllowedTopics.map((topic) => (
+                      <label
+                        key={topic}
+                        className="flex items-center justify-between space-x-2 p-2 border rounded bg-blue-50 border-blue-200"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={true}
+                            readOnly
+                            className="rounded"
+                          />
+                          <span className="text-sm">{topic}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeCustomAllowedTopic(topic)}
+                          className="text-red-600 hover:text-red-800 text-xs"
+                        >
+                          ✕
+                        </button>
+                      </label>
+                    ))}
                   </div>
-                  {allowedTopics.includes('Other') && (
-                    <div className="mt-3">
-                      <Label htmlFor="customAllowed">Specify other allowed topic</Label>
-                      <Input
-                        id="customAllowed"
-                        type="text"
-                        placeholder="e.g., Cooking, Photography, etc."
-                        value={customAllowedTopic}
-                        onChange={(e) => setCustomAllowedTopic(e.target.value)}
-                        className="mt-2"
-                      />
-                    </div>
-                  )}
+                  <div className="mt-3">
+                    <Label htmlFor="newAllowed">Add custom allowed topic</Label>
+                    <Input
+                      id="newAllowed"
+                      type="text"
+                      placeholder="Type a topic and press Enter (e.g., Cooking, Photography)"
+                      value={newAllowedTopic}
+                      onChange={(e) => setNewAllowedTopic(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          addCustomAllowedTopic()
+                        }
+                      }}
+                      className="mt-2"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-3">
@@ -237,20 +286,47 @@ export default function OnboardingPage() {
                         <span className="text-sm">{topic}</span>
                       </label>
                     ))}
+                    {customBlockedTopics.map((topic) => (
+                      <label
+                        key={topic}
+                        className="flex items-center justify-between space-x-2 p-2 border rounded bg-blue-50 border-blue-200"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={true}
+                            readOnly
+                            className="rounded"
+                          />
+                          <span className="text-sm">{topic}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeCustomBlockedTopic(topic)}
+                          className="text-red-600 hover:text-red-800 text-xs"
+                        >
+                          ✕
+                        </button>
+                      </label>
+                    ))}
                   </div>
-                  {blockedTopics.includes('Other') && (
-                    <div className="mt-3">
-                      <Label htmlFor="customBlocked">Specify other blocked topic</Label>
-                      <Input
-                        id="customBlocked"
-                        type="text"
-                        placeholder="e.g., Conspiracy theories, etc."
-                        value={customBlockedTopic}
-                        onChange={(e) => setCustomBlockedTopic(e.target.value)}
-                        className="mt-2"
-                      />
-                    </div>
-                  )}
+                  <div className="mt-3">
+                    <Label htmlFor="newBlocked">Add custom blocked topic</Label>
+                    <Input
+                      id="newBlocked"
+                      type="text"
+                      placeholder="Type a topic and press Enter (e.g., Conspiracy theories)"
+                      value={newBlockedTopic}
+                      onChange={(e) => setNewBlockedTopic(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          addCustomBlockedTopic()
+                        }
+                      }}
+                      className="mt-2"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-3">

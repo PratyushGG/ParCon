@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import type { Child } from '@/lib/types/database'
+import { ChildCardMenu } from '@/components/dashboard/child-card-menu'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -59,11 +60,16 @@ export default async function DashboardPage() {
             {children.map((child) => (
               <Card key={child.id}>
                 <CardHeader>
-                  <CardTitle>{child.name}</CardTitle>
-                  <CardDescription>
-                    {child.age} years old
-                    {child.youtube_channel_id ? ' • YouTube connected' : ' • YouTube not connected'}
-                  </CardDescription>
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <CardTitle>{child.name}</CardTitle>
+                      <CardDescription>
+                        {child.age} years old
+                        {child.youtube_channel_id ? ' • YouTube connected' : ' • YouTube not connected'}
+                      </CardDescription>
+                    </div>
+                    <ChildCardMenu childId={child.id} childName={child.name} />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="flex gap-2">

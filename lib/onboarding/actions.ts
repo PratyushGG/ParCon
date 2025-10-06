@@ -101,3 +101,164 @@ export async function savePreferences(
   revalidatePath('/dashboard')
   return { success: true }
 }
+
+/**
+ * Get child data for editing
+ */
+export async function getChildData(childId: string) {
+  const supabase = await createClient()
+  const user = await getUser()
+
+  if (!user) {
+    return { error: 'Not authenticated' }
+  }
+
+  // Fetch child data
+  const { data: child, error: childError } = await supabase
+    .from('children')
+    .select('*')
+    .eq('id', childId)
+    .eq('parent_id', user.id)
+    .single()
+
+  if (childError || !child) {
+    return { error: 'Child not found or unauthorized' }
+  }
+
+  // Fetch parent preferences
+  const { data: preferences } = await supabase
+    .from('parent_preferences')
+    .select('*')
+    .eq('parent_id', user.id)
+    .single()
+
+  return {
+    child,
+    preferences: preferences || null,
+  }
+}
+
+/**
+ * Update a child profile and preferences
+ */
+export async function updateChild(
+  childId: string,
+  childData: {
+    name: string
+    age: number
+  },
+  preferences: {
+    allowedTopics: string[]
+    blockedTopics: string[]
+    allowMildLanguage: boolean
+    educationalPriority: 'high' | 'medium' | 'low'
+  }
+) {
+  const supabase = await createClient()
+  const user = await getUser()
+
+  if (!user) {
+    return { error: 'Not authenticated' }
+  }
+
+  // Verify the child belongs to this parent
+  const { data: child } = await supabase
+    .from('children')
+    .select('parent_id')
+    .eq('id', childId)
+    .single()
+
+  if (!child || child.parent_id !== user.id) {
+    return { error: 'Child not found or unauthorized' }
+  }
+
+  // Update child profile
+  const { error: childError } = await supabase
+    .from('children')
+    .update({
+      name: childData.name,
+      age: childData.age,
+    })
+    .eq('id', childId)
+
+  if (childError) {
+    console.error('Error updating child:', childError)
+    return { error: 'Failed to update child profile' }
+  }
+
+  // Update preferences (same logic as savePreferences)
+  const { data: existing } = await supabase
+    .from('parent_preferences')
+    .select('id')
+    .eq('parent_id', user.id)
+    .single()
+
+  let result
+
+  if (existing) {
+    result = await supabase
+      .from('parent_preferences')
+      .update({
+        allowed_topics: preferences.allowedTopics,
+        blocked_topics: preferences.blockedTopics,
+        allow_mild_language: preferences.allowMildLanguage,
+        educational_priority: preferences.educationalPriority,
+      })
+      .eq('parent_id', user.id)
+  } else {
+    result = await supabase
+      .from('parent_preferences')
+      .insert({
+        parent_id: user.id,
+        allowed_topics: preferences.allowedTopics,
+        blocked_topics: preferences.blockedTopics,
+        allow_mild_language: preferences.allowMildLanguage,
+        educational_priority: preferences.educationalPriority,
+      })
+  }
+
+  if (result.error) {
+    console.error('Error saving preferences:', result.error)
+    return { error: 'Failed to save preferences' }
+  }
+
+  revalidatePath('/dashboard')
+  return { success: true }
+}
+
+/**
+ * Delete a child profile
+ */
+export async function deleteChild(childId: string) {
+  const supabase = await createClient()
+  const user = await getUser()
+
+  if (!user) {
+    return { error: 'Not authenticated' }
+  }
+
+  // Verify the child belongs to this parent
+  const { data: child } = await supabase
+    .from('children')
+    .select('parent_id')
+    .eq('id', childId)
+    .single()
+
+  if (!child || child.parent_id !== user.id) {
+    return { error: 'Child not found or unauthorized' }
+  }
+
+  // Delete the child (cascade will handle related records)
+  const { error } = await supabase
+    .from('children')
+    .delete()
+    .eq('id', childId)
+
+  if (error) {
+    console.error('Error deleting child:', error)
+    return { error: 'Failed to delete child' }
+  }
+
+  revalidatePath('/dashboard')
+  return { success: true }
+}
