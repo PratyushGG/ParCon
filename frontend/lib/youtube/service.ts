@@ -70,7 +70,7 @@ export async function fetchWatchHistory(
         title: item.snippet?.title || '',
         channelName: item.snippet?.channelTitle || '',
         channelId: item.snippet?.channelId || '',
-        thumbnail: item.snippet?.thumbnails?.medium?.url || '',
+        thumbnail: item.snippet?.thumbnails?.high?.url || item.snippet?.thumbnails?.medium?.url || '',
       }))
 
       console.log(`Found ${videos.length} videos in watch history`)
@@ -116,7 +116,7 @@ export async function fetchWatchHistory(
           title: item.snippet?.title || '',
           channelName: item.snippet?.channelTitle || '',
           channelId: item.snippet?.channelId || '',
-          thumbnail: item.snippet?.thumbnails?.medium?.url || '',
+          thumbnail: item.snippet?.thumbnails?.high?.url || item.snippet?.thumbnails?.medium?.url || '',
         })) || []
 
         console.log(`Found ${videos.length} uploaded videos`)
@@ -130,7 +130,7 @@ export async function fetchWatchHistory(
       title: item.snippet?.title || '',
       channelName: item.snippet?.channelTitle || '',
       channelId: item.snippet?.channelId || '',
-      thumbnail: item.snippet?.thumbnails?.medium?.url || '',
+      thumbnail: item.snippet?.thumbnails?.high?.url || item.snippet?.thumbnails?.medium?.url || '',
     })) || []
 
     console.log(`Found ${videos.length} videos from myRating`)
@@ -179,7 +179,7 @@ export async function fetchVideoMetadata(
         description: item.snippet?.description || '',
         channelName: item.snippet?.channelTitle || '',
         channelId: item.snippet?.channelId || '',
-        thumbnail: item.snippet?.thumbnails?.medium?.url || '',
+        thumbnail: item.snippet?.thumbnails?.high?.url || item.snippet?.thumbnails?.medium?.url || '',
         duration: parseDuration(item.contentDetails?.duration || ''),
         publishedAt: item.snippet?.publishedAt || '',
         tags: item.snippet?.tags || [],

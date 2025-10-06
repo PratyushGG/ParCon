@@ -18,15 +18,15 @@ export interface YouTubeChannel {
 
 export function buildOAuthUrl(state: string): string {
   const params = new URLSearchParams({
-    client_id: process.env.GOOGLE_CLIENT_ID!,
-    redirect_uri: process.env.GOOGLE_REDIRECT_URI!,
+    client_id: process.env.YOUTUBE_CLIENT_ID!,
+    redirect_uri: process.env.YOUTUBE_REDIRECT_URI!,
     response_type: 'code',
     scope: 'https://www.googleapis.com/auth/youtube.readonly',
     access_type: 'offline',
     prompt: 'consent',
     state,
   })
-  
+
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
 }
 
@@ -68,18 +68,18 @@ export async function exchangeCodeForTokens(code: string): Promise<TokenResponse
     },
     body: new URLSearchParams({
       code,
-      client_id: process.env.GOOGLE_CLIENT_ID!,
-      client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-      redirect_uri: process.env.GOOGLE_REDIRECT_URI!,
+      client_id: process.env.YOUTUBE_CLIENT_ID!,
+      client_secret: process.env.YOUTUBE_CLIENT_SECRET!,
+      redirect_uri: process.env.YOUTUBE_REDIRECT_URI!,
       grant_type: 'authorization_code',
     }),
   })
-  
+
   if (!response.ok) {
     const error = await response.text()
     throw new Error(`Token exchange failed: ${error}`)
   }
-  
+
   return response.json()
 }
 
@@ -93,22 +93,22 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: new URLSearchParams({
-      client_id: process.env.GOOGLE_CLIENT_ID!,
-      client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+      client_id: process.env.YOUTUBE_CLIENT_ID!,
+      client_secret: process.env.YOUTUBE_CLIENT_SECRET!,
       refresh_token: refreshToken,
       grant_type: 'refresh_token',
     }),
   })
-  
+
   if (!response.ok) {
     const error = await response.text()
     throw new Error(`Token refresh failed: ${error}`)
   }
-  
+
   return response.json()
 }
 
-export async function getYouTubeChannelId(accessToken: string): Promise<string> {
+export async function getYouTubeChannelId(accessToken: string): Promise<string | null> {
   const response = await fetch(
     'https://www.googleapis.com/youtube/v3/channels?part=id&mine=true',
     {
@@ -117,18 +117,19 @@ export async function getYouTubeChannelId(accessToken: string): Promise<string> 
       },
     }
   )
-  
+
   if (!response.ok) {
     const error = await response.text()
     throw new Error(`Failed to get channel ID: ${error}`)
   }
-  
+
   const data = await response.json()
-  
+
   if (!data.items || data.items.length === 0) {
-    throw new Error('No YouTube channel found for this account')
+    // Return null if no channel - user can still have watch history without a channel
+    return null
   }
-  
+
   return data.items[0].id
 }
 

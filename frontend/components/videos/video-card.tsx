@@ -8,6 +8,7 @@ import type { Video } from '@/shared/types/database'
 import { formatDistanceToNow } from 'date-fns'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 interface VideoCardProps {
   video: Video
@@ -17,6 +18,7 @@ interface VideoCardProps {
 export function VideoCard({ video, childId }: VideoCardProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [imageError, setImageError] = useState(false)
 
   // Format duration (seconds to MM:SS)
   const formatDuration = (seconds: number) => {
@@ -121,9 +123,22 @@ export function VideoCard({ video, childId }: VideoCardProps) {
           {/* Video Info */}
           <div className="flex-1 space-y-2">
             <div className="flex items-start gap-3">
-              {/* Thumbnail placeholder */}
-              <div className="w-32 h-20 bg-gray-200 rounded-md flex-shrink-0 flex items-center justify-center">
-                <span className="text-xs text-gray-500">YouTube</span>
+              {/* Video Thumbnail */}
+              <div className="w-32 h-20 bg-gray-200 rounded-md flex-shrink-0 overflow-hidden relative">
+                {video.thumbnail_url && !imageError ? (
+                  <Image
+                    src={video.thumbnail_url}
+                    alt={video.title || 'Video thumbnail'}
+                    width={128}
+                    height={80}
+                    className="object-cover"
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-xs text-gray-500">YouTube</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex-1 min-w-0">

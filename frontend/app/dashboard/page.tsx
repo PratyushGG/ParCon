@@ -66,7 +66,7 @@ export default async function DashboardPage() {
                       <CardTitle>{child.name}</CardTitle>
                       <CardDescription className="flex items-center gap-2 mt-1">
                         <span>{child.age} years old</span>
-                        {child.youtube_channel_id ? (
+                        {child.youtube_refresh_token ? (
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                             ✓ YouTube Connected
                           </span>
@@ -82,7 +82,7 @@ export default async function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex gap-2 flex-wrap">
-                    {child.youtube_channel_id ? (
+                    {child.youtube_refresh_token ? (
                       <>
                         <Link href={`/videos/${child.id}`}>
                           <Button variant="outline">View Videos</Button>
