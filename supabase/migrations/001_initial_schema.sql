@@ -226,7 +226,7 @@ CREATE POLICY "Parents can update own notifications"
 ON notifications FOR UPDATE
 USING (parent_id = auth.uid());
 
--- Usage stats policies
+-- Usage stats policies--------------------------------
 CREATE POLICY "Parents can view own usage stats"
 ON usage_stats FOR SELECT
 USING (parent_id = auth.uid());
@@ -238,3 +238,4 @@ WITH CHECK (true);
 CREATE POLICY "Service can update usage stats"
 ON usage_stats FOR UPDATE
 USING (true);
+
