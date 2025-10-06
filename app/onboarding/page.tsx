@@ -390,15 +390,37 @@ export default function OnboardingPage() {
               <p className="text-gray-600">
                 Next step: Connect {childName}'s YouTube account to start analyzing their watch history.
               </p>
-              <p className="text-sm text-gray-500">
-                Note: YouTube OAuth integration coming soon. For now, you can return to the dashboard.
-              </p>
-              <Button
-                className="w-full"
-                onClick={() => router.push('/dashboard')}
-              >
-                Go to Dashboard
-              </Button>
+              <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg space-y-2">
+                <p className="text-sm font-medium text-blue-900">
+                  How it works:
+                </p>
+                <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
+                  <li>You'll be redirected to Google to sign in</li>
+                  <li>Sign in with your child's YouTube account</li>
+                  <li>Grant permission to view watch history</li>
+                  <li>We'll securely store the connection</li>
+                </ul>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Button
+                  className="w-full"
+                  onClick={() => {
+                    if (childId) {
+                      window.location.href = `/api/youtube/oauth/start?childId=${childId}`
+                    }
+                  }}
+                  disabled={!childId}
+                >
+                  Connect YouTube Account
+                </Button>
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={() => router.push('/dashboard')}
+                >
+                  Skip for Now
+                </Button>
+              </div>
             </CardContent>
           </>
         )}

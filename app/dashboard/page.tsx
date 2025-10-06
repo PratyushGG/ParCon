@@ -72,10 +72,26 @@ export default async function DashboardPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex gap-2">
-                    <Button variant="outline">View Videos</Button>
-                    {!child.youtube_channel_id && (
-                      <Link href="/onboarding">
+                  <div className="flex gap-2 flex-wrap">
+                    {child.youtube_channel_id ? (
+                      <>
+                        <Link href={`/videos/${child.id}`}>
+                          <Button variant="outline">View Videos</Button>
+                        </Link>
+                        <Link href={`/scan/${child.id}`}>
+                          <Button variant="outline">Scan Videos</Button>
+                        </Link>
+                        <Link href={`/analyze/${child.id}`}>
+                          <Button>Analyze with AI</Button>
+                        </Link>
+                        <Link href={`/api/youtube/oauth/start?childId=${child.id}`}>
+                          <Button variant="outline" size="sm">
+                            Reconnect YouTube
+                          </Button>
+                        </Link>
+                      </>
+                    ) : (
+                      <Link href={`/api/youtube/oauth/start?childId=${child.id}`}>
                         <Button>Connect YouTube</Button>
                       </Link>
                     )}
