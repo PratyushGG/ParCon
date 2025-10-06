@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getUser } from '@/lib/auth/actions'
-import { createClient } from '@/lib/supabase/server'
-import { analyzeVideo } from '@/lib/ai/analyzer'
-import { fetchVideoTranscript } from '@/lib/youtube/transcript'
+import { getUser } from '@/frontend/lib/auth/actions'
+import { createClient } from '@/frontend/lib/supabase/server'
+import { analyzeVideo } from '@/frontend/lib/ai/analyzer'
+import { fetchVideoTranscript } from '@/frontend/lib/youtube/transcript'
 
 /**
  * Analyze videos using AI

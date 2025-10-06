@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getTokensFromCode, getYouTubeClient } from '@/lib/youtube/oauth'
-import { getUser } from '@/lib/auth/actions'
-import { createClient } from '@/lib/supabase/server'
+import { getTokensFromCode, getYouTubeClient } from '@/frontend/lib/youtube/oauth'
+import { getUser } from '@/frontend/lib/auth/actions'
+import { createClient } from '@/frontend/lib/supabase/server'
 
 /**
  * Handle YouTube OAuth callback

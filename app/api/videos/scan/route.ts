@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getUser } from '@/lib/auth/actions'
-import { createClient } from '@/lib/supabase/server'
-import { fetchWatchHistory, fetchVideoMetadata } from '@/lib/youtube/service'
-import { fetchMultipleTranscripts } from '@/lib/youtube/transcript'
+import { getUser } from '@/frontend/lib/auth/actions'
+import { createClient } from '@/frontend/lib/supabase/server'
+import { fetchWatchHistory, fetchVideoMetadata } from '@/frontend/lib/youtube/service'
+import { fetchMultipleTranscripts } from '@/frontend/lib/youtube/transcript'
 
 /**
  * Trigger initial scan of child's watch history

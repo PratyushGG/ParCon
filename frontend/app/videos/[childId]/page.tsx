@@ -1,12 +1,12 @@
-import { createClient } from '@/lib/supabase/server'
-import { getUser } from '@/lib/auth/actions'
+import { createClient } from '@/frontend/lib/supabase/server'
+import { getUser } from '@/frontend/lib/auth/actions'
 import { redirect } from 'next/navigation'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import type { Video, Child } from '@/lib/types/database'
-import { VideoCard } from '@/components/videos/video-card'
-import { SummaryStats } from '@/components/videos/summary-stats'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/frontend/components/ui/tabs'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/frontend/components/ui/card'
+import { Badge } from '@/frontend/components/ui/badge'
+import type { Video, Child } from '@/shared/types/database'
+import { VideoCard } from '@/frontend/components/videos/video-card'
+import { SummaryStats } from '@/frontend/components/videos/summary-stats'
 
 export default async function VideosPage({ params }: { params: Promise<{ childId: string }> }) {
   const supabase = await createClient()

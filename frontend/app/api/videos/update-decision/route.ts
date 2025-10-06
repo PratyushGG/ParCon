@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getUser } from '@/lib/auth/actions'
-import { createClient } from '@/lib/supabase/server'
+import { getUser } from '@/frontend/lib/auth/actions'
+import { createClient } from '@/frontend/lib/supabase/server'
 
 /**
  * Update a video's AI decision (parent override)

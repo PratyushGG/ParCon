@@ -1,5 +1,5 @@
 import { getYouTubeClient, refreshAccessToken } from './oauth'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/frontend/lib/supabase/server'
 
 /**
  * Fetch watch history for a child's YouTube account

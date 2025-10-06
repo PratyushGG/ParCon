@@ -1,15 +1,15 @@
 'use client'
 
 import { MoreVertical, Edit, Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/frontend/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/frontend/components/ui/dropdown-menu'
 import { useRouter } from 'next/navigation'
-import { deleteChild } from '@/lib/onboarding/actions'
+import { deleteChild } from '@/frontend/lib/onboarding/actions'
 import { useState } from 'react'
 
 interface ChildCardMenuProps {

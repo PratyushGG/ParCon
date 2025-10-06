@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthUrl } from '@/lib/youtube/oauth'
-import { getUser } from '@/lib/auth/actions'
-import { createClient } from '@/lib/supabase/server'
+import { getAuthUrl } from '@/frontend/lib/youtube/oauth'
+import { getUser } from '@/frontend/lib/auth/actions'
+import { createClient } from '@/frontend/lib/supabase/server'
 
 /**
  * Start YouTube OAuth flow

@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/frontend/components/ui/card'
+import { Button } from '@/frontend/components/ui/button'
 
 export default function ScanPage() {
   const params = useParams()

@@ -1,4 +1,4 @@
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@/frontend/components/ui/card'
 import { Clock, Video, GraduationCap, AlertCircle } from 'lucide-react'
 
 interface SummaryStatsProps {
